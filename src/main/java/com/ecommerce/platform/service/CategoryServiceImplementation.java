@@ -22,4 +22,17 @@ public class CategoryServiceImplementation implements CategoryService {
         category.setCategoryId(uniqueId++);
         categories.add(category);
     }
+
+    @Override
+    public String  deleteCategory(Long categoryId) {
+        boolean result = categories.removeIf(categoryModal -> categoryModal.getCategoryId().equals( categoryId));
+        System.out.println(result);
+        if(result){
+            return "Deleted Successfully";
+        }
+        else{
+            return "Category Not Found";
+        }
+
+    }
 }
