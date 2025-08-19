@@ -2,6 +2,7 @@ package com.ecommerce.platform.controller;
 
 import com.ecommerce.platform.model.CategoryModal;
 import com.ecommerce.platform.service.CategoryService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,8 +30,15 @@ public class CategoryController {
    }
 
    @DeleteMapping("/api/admin/categories/{categoryId}")
-    public String deleteCategory(@PathVariable Long categoryId){
+    public ResponseEntity<String> deleteCategory(@PathVariable Long categoryId){
        return categoryService.deleteCategory(categoryId);
 
    }
+    @PatchMapping("/api/admin/categories/{categoryId}")
+    public ResponseEntity<String> updateCategory(@RequestBody CategoryModal category, @PathVariable Long categoryId){
+        return categoryService.updateCategory(category, categoryId);
+
+    }
 }
+
+
