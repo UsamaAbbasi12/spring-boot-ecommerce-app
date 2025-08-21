@@ -1,6 +1,8 @@
 package com.ecommerce.platform.service;
 
 import com.ecommerce.platform.model.CategoryModal;
+import com.ecommerce.platform.repositories.CategoryRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.http.ResponseEntity;
@@ -13,25 +15,25 @@ import java.util.List;
 public class CategoryServiceImplementation implements CategoryService {
 
     private Long uniqueId = 1L;
-    List<CategoryModal> categories = new ArrayList<>();
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Override
     public List<CategoryModal> getAllCategories() {
-        return categories;
+        return categoryRepository.findAll();
     }
 
     @Override
     public void createCategory(CategoryModal category) {
         category.setCategoryId(uniqueId++);
-        categories.add(category);
+        categoryRepository.save(category);
     }
 
     @Override
     public ResponseEntity<String> deleteCategory(Long categoryId) {
-        boolean result = categories.removeIf(categoryModal -> categoryModal.getCategoryId().equals(categoryId));
-        System.out.println(result);
-
-        if (result) {
+        if (categoryRepository.existsById(categoryId)) {
+            categoryRepository.deleteById(categoryId);
             return ResponseEntity.status(HttpStatus.OK).body("Category Deleted Successfully");
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Category Not Found");
@@ -40,21 +42,14 @@ public class CategoryServiceImplementation implements CategoryService {
 
     @Override
     public ResponseEntity<String> updateCategory(CategoryModal category, Long categoryId) {
-        CategoryModal found = null;
-        for(CategoryModal c:categories ){
-            if(c.getCategoryId().equals(categoryId)){
-                found = c;
-                break;
-            }
-
-        }
-        if(found != null){
-            found.setName(category.getName());
-            return ResponseEntity.status(HttpStatus.OK).body("Category Updated Successfully");
-        }
-        else{
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Category Not Found");
-        }
-
+        return categoryRepository.findById(categoryId)
+                .map(found -> {
+                    found.setName(category.getName());
+                    categoryRepository.save(found); // persist the changes
+                    return ResponseEntity.status(HttpStatus.OK)
+                            .body("Category Updated Successfully");
+                })
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Category Not Found"));
     }
 }
